@@ -38,6 +38,7 @@ pipeline {
                 docker run -d -p $PORT:80 --name $CONTAINER_NAME $IMAGE_NAME
                 '''
             }
+        }
       stage('Health Check') {
             steps {
                 echo "Checking application health..."
