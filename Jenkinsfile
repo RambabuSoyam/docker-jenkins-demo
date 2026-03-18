@@ -1,45 +1,53 @@
 pipeline {
     agent any
 
-    environment{
-        IMAGE_NAME='jenkins-demo'
-        CONTAINER_NAME='jenkins-container'
-        PORT='8085'
+    environment {
+        IMAGE_NAME = "jenkins-demo"
+        CONTAINER_NAME = "jenkins-container"
+        PORT = "8085"
     }
+
     stages {
 
-        stage('Checkout code') {
+        stage('Checkout Code') {
             steps {
-                echo "cloning repo..."
+                echo "Cloning repository..."
+                // Jenkins already clones automatically (SCM)
             }
         }
 
-        stage('Verify files') {
+        stage('Verify Files') {
             steps {
                 sh 'ls -lrt'
             }
         }
-        stage('Build Docker Image'){
-            steps{
-                echo "Building Docker Image....."
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker Image..."
                 sh 'docker build -t $IMAGE_NAME .'
             }
-    }
-        stage('Stop Old Container'){
-            steps{
+        }
+
+        stage('Stop Old Container') {
+            steps {
                 echo "Stopping old container if exists..."
-                sh 'docker rm -f $CONTAINER_NAME || true'
+                sh '''
+                docker rm -f $CONTAINER_NAME || true
+                '''
             }
         }
-        stage('Run New Container'){
-            steps{
+
+        stage('Run New Container') {
+            steps {
                 echo "Running new container..."
                 sh '''
                 docker run -d -p $PORT:80 --name $CONTAINER_NAME $IMAGE_NAME
                 '''
             }
         }
-      stage('Health Check') {
+
+        stage('Health Check') {
             steps {
                 echo "Checking application health..."
                 sh '''
@@ -48,13 +56,15 @@ pipeline {
                 '''
             }
         }
-       post{
-           success{
-               echo "Deployment Successful"
-       }     
-           failure{
-               echo"Deployment failed"
-           }
-       }
-}
+
+    }
+
+    post {
+        success {
+            echo "✅ Deployment Successful!"
+        }
+        failure {
+            echo "❌ Deployment Failed!"
+        }
+    }
 }
