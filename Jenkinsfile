@@ -63,7 +63,7 @@ pipeline {
                 docker stop nginx-container || true
                 docker rm nginx-container || true
 
-                docker run -d -p 8080:80 \
+                docker run -d -p 80:80 \
                 -v $(pwd)/index.html:/usr/share/nginx/html/index.html \
                 -v $(pwd)/nginx.conf:/etc/nginx/conf.d/default.conf \
                 --name nginx-container nginx
