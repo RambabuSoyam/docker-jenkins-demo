@@ -2,69 +2,74 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "jenkins-demo"
-        CONTAINER_NAME = "jenkins-container"
-        PORT = "8085"
+        VM_IP = "192.168.31.33"
+        VM_USER = "ubuntu"
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Clone Repo') {
             steps {
-                echo "Cloning repository..."
-                // Jenkins already clones automatically (SCM)
+                git 'https://your-repo-url'
             }
         }
 
-        stage('Verify Files') {
+        // 🔥 BACKEND DEPLOYMENT
+        stage('Deploy Backend to VM') {
             steps {
-                sh 'ls -lrt'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker Image..."
-                sh 'docker build -t $IMAGE_NAME .'
-            }
-        }
-
-        stage('Stop Old Container') {
-            steps {
-                echo "Stopping old container if exists..."
                 sh '''
-                docker rm -f $CONTAINER_NAME || true
+                ssh -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} << EOF
+
+                # Stop old app
+                pkill -f app.py || true
+
+                # Setup app directory
+                mkdir -p ~/app
+                cd ~/app
+
+                # Clean old code
+                rm -rf *
+
+                exit
+                EOF
+                '''
+
+                sh '''
+                # Copy files to VM
+                scp -r app/* ${VM_USER}@${VM_IP}:~/app/
+                '''
+
+                sh '''
+                ssh ${VM_USER}@${VM_IP} << EOF
+
+                cd ~/app
+
+                # Install dependencies
+                pip3 install -r requirements.txt --break-system-packages || true
+
+                # Start app
+                nohup python3 app.py > app.log 2>&1 &
+
+                exit
+                EOF
                 '''
             }
         }
 
-        stage('Run New Container') {
+        // 🔥 FRONTEND + NGINX DEPLOYMENT
+        stage('Deploy Frontend (Nginx)') {
             steps {
-                echo "Running new container..."
                 sh '''
-                docker run -d -p $PORT:80 --name $CONTAINER_NAME $IMAGE_NAME
+                docker stop nginx-container || true
+                docker rm nginx-container || true
+
+                docker run -d -p 8080:80 \
+                -v $(pwd)/index.html:/usr/share/nginx/html/index.html \
+                -v $(pwd)/nginx.conf:/etc/nginx/conf.d/default.conf \
+                --name nginx-container nginx
                 '''
             }
         }
 
-        stage('Health Check') {
-            steps {
-                echo "Checking application health..."
-                sh '''
-                sleep 5
-                curl -f http://localhost:$PORT || exit 1
-                '''
-            }
-        }
-
-    }
-
-    post {
-        success {
-            echo "✅ Deployment Successful!"
-        }
-        failure {
-            echo "❌ Deployment Failed!"
-        }
     }
 }
