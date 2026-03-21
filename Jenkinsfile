@@ -10,7 +10,7 @@ pipeline {
 
         stage('Clone Repo') {
             steps {
-                git 'https://your-repo-url'
+                git 'https://github.com/RambabuSoyam/docker-jenkins-demo.git'
             }
         }
 
