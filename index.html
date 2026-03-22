@@ -4,7 +4,7 @@
     <title>DevOps App</title>
 </head>
 <body>
-    <h2>Frontend → Backend Communication</h2>
+    <h2>HI FRIENDS</h2>
 
     <input type="text" id="name" placeholder="Enter your name">
     <button onclick="callAPI()">Submit</button>
@@ -19,7 +19,7 @@
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById("output").innerText = data.message;
-                    document.getElementById("msg").style.color = "red";
+                    document.getElementById("output").style.color = "red";
                 })
                 .catch(err => {
                     document.getElementById("output").innerText = "Error: " + err;
