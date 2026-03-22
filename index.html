@@ -19,6 +19,7 @@
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById("output").innerText = data.message;
+                    document.getElementById("msg").style.color = "red";
                 })
                 .catch(err => {
                     document.getElementById("output").innerText = "Error: " + err;
