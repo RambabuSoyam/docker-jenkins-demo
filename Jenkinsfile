@@ -8,11 +8,6 @@ pipeline {
 
     stages {
 
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/RambabuSoyam/docker-jenkins-demo.git'
-            }
-        }
 
         // 🔥 BACKEND DEPLOYMENT
         stage('Deploy Backend to VM') {
